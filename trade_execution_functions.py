@@ -34,8 +34,8 @@ def trade_execution(market: str, temperatures: list):
             logging.info('Trade Saved')
             return True
        
-    except:
-        return False
+    except Exception as e:
+        logging.info(f'trade_execution : {e}')
     
 def if_temp_reaches_max(current_temp: int, market: str):
     try:
@@ -49,8 +49,8 @@ def if_temp_reaches_max(current_temp: int, market: str):
             logging.info('Trade Saved')
             
             return True
-    except:
-        return False
+    except Exception as e:
+        logging.info(f'if_temp_reaches_max : {e}')
     
 def xml_scrape(xml_url):
 
@@ -87,41 +87,49 @@ def xml_scrape(xml_url):
     
 def trade_criteria_met(temperatures):
     
-    current_time = datetime.now(TIMEZONE).hour
+    try:
+        current_time = datetime.now(TIMEZONE).hour
 
-    start_scrape = xml_scrape(xml_url=XML_URL)[1] - 1 >= current_time
-    length = len(temperatures) >= 7
-    
+        start_scrape = xml_scrape(xml_url=XML_URL)[1] - 1 >= current_time
+        length = len(temperatures) >= 7
+        
 
-    if start_scrape and length:
-        x = np.arange(0, len(temperatures), 1).reshape(-1,1)
-        regressor = LinearRegression().fit(x, temperatures)
-        slope = regressor.coef_
-        if slope <= 0:
-            return True
+        if start_scrape and length:
+            x = np.arange(0, len(temperatures), 1).reshape(-1,1)
+            regressor = LinearRegression().fit(x, temperatures)
+            slope = regressor.coef_
+            if slope <= 0:
+                return True
+    except Exception as e:
+        logging.error(f"Error in trade_criteria_met")
         
 def begin_scrape():
-    current_time = datetime.now(TIMEZONE).hour
-    start_scrape = current_time >= 9
-    end_scrape = current_time <= 17
-    if start_scrape and end_scrape:
-        return True
+    try:
+        current_time = datetime.now(TIMEZONE).hour
+        start_scrape = current_time >= 9
+        end_scrape = current_time <= 17
+        if start_scrape and end_scrape:
+            return True
+    except Exception as e:
+        logging.error(f"Error in begin_scrape: {e}")
     
 
 def trade_criteria_met(temperatures, lr_length):
-    
-    current_time = datetime.now(TIMEZONE).hour
+    try:
+        current_time = datetime.now(TIMEZONE).hour
 
-    start_scrape = current_time >= xml_scrape(xml_url=XML_URL)[1] - 1
-    end_scrape = current_time <= 17  
-    length = len(temperatures) >= 5
+        start_scrape = current_time >= xml_scrape(xml_url=XML_URL)[1] - 1
+        end_scrape = current_time <= 17  
+        length = len(temperatures) >= 5
 
-    if all([start_scrape, end_scrape, length]):
-      x = np.arange(0, len(temperatures), 1).reshape(-1,1)[-lr_length:]
-      regressor = LinearRegression().fit(x, temperatures[-lr_length:])
-      slope = regressor.coef_
-      if slope <= 0:
-        return True
+        if all([start_scrape, end_scrape, length]):
+            x = np.arange(0, len(temperatures), 1).reshape(-1,1)[-lr_length:]
+            regressor = LinearRegression().fit(x, temperatures[-lr_length:])
+            slope = regressor.coef_
+            if slope <= 0:
+                return True
+    except Exception as e:
+        logging.info(f"Error in trade_criteria_met {e}")
 
 
 
@@ -154,5 +162,5 @@ def scrape_temperature(driver):
         return [date_scrape, temp]  # Return date and temperature
         
     except Exception as e:
-        logging.error(f"Error scraping temperature: {e}")
+        logging.error(f"Error scrape_temperature: {e}")
         return None

@@ -12,18 +12,10 @@ from fake_useragent import UserAgent
 from random import randint
 from trade_execution_functions import *
 from input_variables import *
-from util import trade_today
+from util import *
 
 kalshi_client = KalshiClient()
 client = kalshi_client.get_client()
-
-
-def logging_settings():
-    return logging.basicConfig(
-    level=logging.INFO,  # Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s - %(levelname)s - %(message)s",  # Define the log format
-    handlers=[logging.StreamHandler()]  # Output logs to the terminal
-)
 
 
 # Initialize Selenium WebDriver
@@ -54,6 +46,8 @@ def scrape_dynamic_table(driver):
         try:
             if begin_scraping and trade_made_today:
                 
+                
+                
                 scrape_temp = scrape_temperature(driver)
                 current_date = scrape_temp[0]
                 current_temp = scrape_temp[1]
@@ -62,8 +56,9 @@ def scrape_dynamic_table(driver):
                     
                     dates.append(current_date)
                     temperatures.append(current_temp)
-                    print(f'Dates: {dates}')
-                    print(f'Temperatures: {temperatures}')
+                    
+                    logging.info(f"Date: {dates}")
+                    logging.info(f"Date: {temperatures}")
 
                     #checks to see if currentc temp is at max of available markets then makes bet
                 
@@ -91,10 +86,11 @@ def scrape_dynamic_table(driver):
                     rand = randint(10, 25)
                     time.sleep(rand)
                     logging.info('to_append is False')
+          
             
 
         except Exception as e:
-            logging.error(f"Error in main loop: {e}")
+            logging.error(f"in main loop: {e}")
 
             loop_counter += 1
             if loop_counter >= restart_threshold:
