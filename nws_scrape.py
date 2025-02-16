@@ -36,25 +36,31 @@ def scrape_dynamic_table(driver):
     logging_settings()
     temperatures = []
     dates = []
+    cant_make_trade = None
     
     restart_threshold = 50  # Restart WebDriver every 50 iterations
     loop_counter = 0
-    begin_scraping = begin_scrape()
-    trade_made_today = trade_today(market=MARKET)
+
+    logging.info('Loading Scrape Dynamic Table')
 
     while True:
+        begin_scraping = begin_scrape()
+        trade_made_today = trade_today(market=MARKET)
+        logging.info('While Loop')
+        time.sleep(3)
         try:
-
+            logging.info(f'being_scraping is {begin_scraping}')
+            logging.info(f'trade_made_today is {trade_made_today}')
             if begin_scraping and not trade_made_today:
-                logging.info(f'Begin Scrape  {begin_scraping}')
-                logging.info(f'trade_made_today {trade_made_today}')
-               
+                logging.info('Begin Scrape')
+                logging.info('No Trade Made Today')
                 
                 scrape_temp = scrape_temperature(driver)
                 current_date = scrape_temp[0]
                 current_temp = scrape_temp[1]
-
-                if len(dates) == 0 or dates[-1] != current_date:
+                logging.info(f'Dates length {len(dates)}')
+                
+                if len(dates) == 0 or (len(dates) > 0 and dates[-1] != current_date):
                     
                     dates.append(current_date)
                     temperatures.append(current_temp)
@@ -70,27 +76,30 @@ def scrape_dynamic_table(driver):
                        
                         temperatures = []
                         dates = []
-                      
-                            
-
+                    
+                    highest_temp = np.array(temperatures).max()
+                    highest_temp = int(highest_temp)
+                    market_ticker = order_pipeline(highest_temp=highest_temp, market=market)
                     trade_criteria = trade_criteria_met(temperatures=temperatures, lr_length=LR_LENGTH)
                     if trade_criteria:
                         
                         trade_execute = trade_execution(temperatures=temperatures,market=MARKET)
                         if trade_execute:
                             logging.info('Trade Criteria True')
-                            
                            
                             temperatures = []
                             dates = []
                 
                 else:
-                    rand = randint(10, 25)
-                    time.sleep(rand)
+                    # rand = randint(5, 10)
+                    # time.sleep(rand)
                     logging.info('to_append is False')
+            elif trade_made_today:
+                temperatures = []
+                dates = []
+            else:
+                continue
           
-            
-
         except Exception as e:
             logging.error(f"in main loop: {e}")
 

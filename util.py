@@ -49,6 +49,7 @@ def trade_to_csv(order_id : str, ticker: str):
         with open('data/trade_data.csv', 'a', newline='') as file:
             writer = csv.DictWriter(file, column_names)
             writer.writerow(data_to_csv)
+            
 
         return None
     except Exception as e:
@@ -126,7 +127,8 @@ def trade_today(market=MARKET):
         todaysDate = today.strftime('%y%b%d').upper()
         event = f'{market}-{todaysDate}'
         orders = client.get_orders(event_ticker = event)['orders']
-        if orders == 0:
+        if orders != 1:
+            logging.info('Trade made today')
             return True
         else:
             return False

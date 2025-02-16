@@ -21,11 +21,13 @@ client = kalshi_client.get_client()
 
 def trade_execution(market: str, temperatures: list):
     try:
+        highest_temp = np.array(temperatures).max()
+        highest_temp = int(highest_temp)
+        market_ticker = order_pipeline(highest_temp=highest_temp, market=market)
+        if market_ticker:
+            return 'Market Ticker'
         balance = client.get_balance()['balance'] > 100
-        if balance:
-            highest_temp = np.array(temperatures).max()
-            highest_temp = int(highest_temp)
-            market_ticker = order_pipeline(highest_temp=highest_temp, market=market)
+        if balance:          
             logging.info('order_pipeline worked')
             order_id = str(uuid.uuid4())
             client.create_order(ticker=market_ticker, client_order_id=order_id)
@@ -33,6 +35,8 @@ def trade_execution(market: str, temperatures: list):
             trade_to_csv(order_id=order_id, ticker=market_ticker)
             logging.info('Trade Saved')
             return True
+        else:
+            return False
        
     except Exception as e:
         logging.info(f'trade_execution : {e}')
@@ -70,7 +74,6 @@ def xml_scrape(xml_url):
     forecasted['DateTime'] = pd.to_datetime(forecasted['DateTime'])
     forecasted = forecasted.sort_values(by='DateTime')
 
-    #denver_plus_1_day = (datetime.now(TIMEZONE) + timedelta(days=1)).day
     denver_today = datetime.now(TIMEZONE).day
 
     next_day_high = forecasted[forecasted['DateTime'].dt.day == denver_today]['Temperature'].idxmax()
@@ -85,18 +88,19 @@ def xml_scrape(xml_url):
     logging.error(f"Error scraping XML: {e}")
 
     
-def trade_criteria_met(temperatures):
+def trade_criteria_met(temperatures, lr_length=LR_LENGTH):
     
     try:
         current_time = datetime.now(TIMEZONE).hour
+        hour_max_temp = xml_scrape(xml_url=XML_URL)[1]
 
-        start_scrape = xml_scrape(xml_url=XML_URL)[1] - 1 >= current_time
-        length = len(temperatures) >= 7
-        
+        start_scrape = hour_max_temp - 1 >= current_time
+        length = len(temperatures) >= lr_length
 
         if start_scrape and length:
-            x = np.arange(0, len(temperatures), 1).reshape(-1,1)
-            regressor = LinearRegression().fit(x, temperatures)
+            x = np.arange(0, lr_length).reshape(-1,1)
+            temp_length = temperatures[-lr_length:]
+            regressor = LinearRegression().fit(x, temp_length)
             slope = regressor.coef_
             if slope <= 0:
                 return True
@@ -106,32 +110,17 @@ def trade_criteria_met(temperatures):
 def begin_scrape():
     try:
         current_time = datetime.now(TIMEZONE).hour
-        start_scrape = current_time >= 9
-        end_scrape = True# current_time <= 17
+        
+        start_scrape = current_time >= 10
+        end_scrape = current_time <= 17
+  
         if start_scrape and end_scrape:
             return True
+        else:
+            return False
     except Exception as e:
         logging.error(f"Error in begin_scrape: {e}")
     
-
-def trade_criteria_met(temperatures, lr_length):
-    try:
-        current_time = datetime.now(TIMEZONE).hour
-
-        start_scrape = current_time >= xml_scrape(xml_url=XML_URL)[1] - 1
-        end_scrape = current_time <= 17  
-        length = len(temperatures) >= 5
-
-        if all([start_scrape, end_scrape, length]):
-            x = np.arange(0, len(temperatures), 1).reshape(-1,1)[-lr_length:]
-            regressor = LinearRegression().fit(x, temperatures[-lr_length:])
-            slope = regressor.coef_
-            if slope <= 0:
-                return True
-    except Exception as e:
-        logging.info(f"Error in trade_criteria_met {e}")
-
-
 
 # Scrape temperature data from the website
 def scrape_temperature(driver):
