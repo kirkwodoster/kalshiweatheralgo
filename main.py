@@ -28,7 +28,7 @@ if __name__ == "__main__":
     driver = nws_scrape.initialize_driver()
     logging_settings()
     try:
-        nws_scrape.scrape_dynamicleac_table(driver)
+        nws_scrape.scrape_dynamic_table(driver)
     except KeyboardInterrupt:
         logging.info("Script interrupted by user.")
     finally:
