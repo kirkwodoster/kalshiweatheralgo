@@ -24,23 +24,16 @@ ws_client = KalshiWebSocketClient(
 
 if __name__ == "__main__":
     
-    # orders = client.get_orders(event_ticker = 'KXHIGHDEN-25FEB16')['orders']
-    # print(orders)
-    order_id = '6cabcfa7-0479-4da5-95a4-f5620e47e9a4'
-    ticker = 'KXHIGHDEN-25FEB16-T39'
-    x = trade_to_csv(order_id = order_id, ticker = ticker)
-    print(x)
     
-
-    # driver = nws_scrape.initialize_driver()
-    # logging_settings()
-    # try:
-    #     nws_scrape.scrape_dynamicleac_table(driver)
-    # except KeyboardInterrupt:
-    #     logging.info("Script interrupted by user.")
-    # finally:
-    #     driver.quit()
-    #     logging.info("WebDriver closed.")
+    driver = nws_scrape.initialize_driver()
+    logging_settings()
+    try:
+        nws_scrape.scrape_dynamicleac_table(driver)
+    except KeyboardInterrupt:
+        logging.info("Script interrupted by user.")
+    finally:
+        driver.quit()
+        logging.info("WebDriver closed.")
 
 
 
