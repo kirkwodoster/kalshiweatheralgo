@@ -44,9 +44,11 @@ def scrape_dynamic_table(driver):
 
     while True:
         try:
-            if begin_scraping and trade_made_today:
-                
-                
+
+            if begin_scraping and not trade_made_today:
+                logging.info(f'Begin Scrape  {begin_scraping}')
+                logging.info(f'trade_made_today {trade_made_today}')
+               
                 
                 scrape_temp = scrape_temperature(driver)
                 current_date = scrape_temp[0]

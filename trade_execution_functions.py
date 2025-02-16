@@ -107,7 +107,7 @@ def begin_scrape():
     try:
         current_time = datetime.now(TIMEZONE).hour
         start_scrape = current_time >= 9
-        end_scrape = current_time <= 17
+        end_scrape = True# current_time <= 17
         if start_scrape and end_scrape:
             return True
     except Exception as e:

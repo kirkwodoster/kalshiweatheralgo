@@ -128,6 +128,8 @@ def trade_today(market=MARKET):
         orders = client.get_orders(event_ticker = event)['orders']
         if orders == 0:
             return True
+        else:
+            return False
 
     except Exception as e:
         logging.error(f"Error Trade Today: {e}")

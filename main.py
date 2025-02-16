@@ -21,10 +21,9 @@ ws_client = KalshiWebSocketClient(
 if __name__ == "__main__":
     
 
-   
     driver = nws_scrape.initialize_driver()
     #driver.set_page_load_timeout(180)
-    nws_scrape.logging_settings()
+    logging_settings()
     try:
         nws_scrape.scrape_dynamic_table(driver)
     except KeyboardInterrupt:
