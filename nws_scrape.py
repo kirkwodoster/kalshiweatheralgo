@@ -77,9 +77,7 @@ def scrape_dynamic_table(driver):
                         temperatures = []
                         dates = []
                     
-                    highest_temp = np.array(temperatures).max()
-                    highest_temp = int(highest_temp)
-                    market_ticker = order_pipeline(highest_temp=highest_temp, market=market)
+                   
                     trade_criteria = trade_criteria_met(temperatures=temperatures, lr_length=LR_LENGTH)
                     if trade_criteria:
                         
